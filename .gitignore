@@ -62,4 +62,4 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 
 .derivedData/
-*.xcodeproj/
+SportsCommentator.xcodeproj/project.pbxproj.local
