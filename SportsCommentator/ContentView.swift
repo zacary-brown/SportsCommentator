@@ -83,7 +83,7 @@ struct ContentView: View {
         switch viewModel.state {
         case .idle:
             Button("Generate Commentary Video") {
-                viewModel.runPipeline()
+                // viewModel.runPipeline()
             }
             .buttonStyle(.borderedProminent)
             .disabled(viewModel.sourceVideoURL == nil)
@@ -93,7 +93,7 @@ struct ContentView: View {
                 Text(progressText(step: step))
                     .font(.subheadline)
                 Button("Cancel") {
-                    viewModel.cancelPipeline()
+                    // viewModel.cancelPipeline()
                 }
                 .buttonStyle(.bordered)
             }
@@ -130,13 +130,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView(
-        viewModel: PipelineViewModel(
-            orchestrator: PipelineOrchestrator(
-                transcriptionClient: OpenAIClient(apiKey: nil),
-                voiceClient: ElevenLabsClient(apiKey: nil),
-                videoComposer: AVFoundationVideoComposer(),
-                voiceProfile: VoiceProfile(id: "preview", displayName: "Preview")
-            )
-        )
+        viewModel: PipelineViewModel()
     )
 }

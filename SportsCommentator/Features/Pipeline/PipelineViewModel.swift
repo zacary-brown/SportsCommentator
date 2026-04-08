@@ -6,6 +6,28 @@ import SwiftUI
 import UniformTypeIdentifiers
 internal import Combine
 
+enum PipelineState: Equatable {
+    case idle
+    case running(step: PipelineStep)
+    case failed(message: String, recoverableStep: PipelineStep?)
+    case completed(outputURL: URL, transcript: String)
+}
+
+enum PipelineStep: Equatable {
+    case importing
+    case transcribing
+    case generatingVoice
+    case composing
+}
+
+enum PipelineError: Error {
+    case importFailed
+    case transcriptionFailed
+    case voiceGenerationFailed
+    case compositionFailed
+    case cancelled
+}
+
 @MainActor
 final class PipelineViewModel: ObservableObject {
     @Published var selectedItem: PhotosPickerItem?
@@ -14,12 +36,12 @@ final class PipelineViewModel: ObservableObject {
     @Published var transcript: String = ""
     @Published var state: PipelineState = .idle
 
-    private let orchestrator: PipelineOrchestrator
+    // private let orchestrator: PipelineOrchestrator
     private var pipelineTask: Task<Void, Never>?
 
-    init(orchestrator: PipelineOrchestrator) {
-        self.orchestrator = orchestrator
-    }
+//    init(orchestrator: PipelineOrchestrator) {
+//        self.orchestrator = orchestrator
+//    }
 
     func importSelectedVideo() async {
         guard let selectedItem else { return }
@@ -34,42 +56,45 @@ final class PipelineViewModel: ObservableObject {
                 .appendingPathExtension("mp4")
             try movieData.write(to: url, options: .atomic)
             sourceVideoURL = url
+            outputVideoURL = url
+            transcript = ""
             state = .idle
         } catch {
             state = .failed(message: error.localizedDescription, recoverableStep: .importing)
         }
     }
 
-    func runPipeline() {
-        guard let sourceVideoURL else { return }
-        pipelineTask?.cancel()
-        outputVideoURL = nil
-        transcript = ""
+    // func runPipeline() {
+    //     guard let sourceVideoURL else { return }
+    //     pipelineTask?.cancel()
+    //     outputVideoURL = nil
+    //     transcript = ""
 
-        pipelineTask = Task {
-            do {
-                let job = try await orchestrator.run(sourceVideoURL: sourceVideoURL) { [weak self] newState in
-                    Task { @MainActor in
-                        self?.state = newState
-                    }
-                }
-                transcript = job.transcript
-                outputVideoURL = job.outputVideoURL
-                state = .completed(outputURL: job.outputVideoURL, transcript: job.transcript)
-            } catch is CancellationError {
-                state = .failed(message: PipelineError.cancelled.localizedDescription, recoverableStep: nil)
-            } catch {
-                state = .failed(message: error.localizedDescription, recoverableStep: retryStep(for: error))
-            }
-        }
-    }
+    //     pipelineTask = Task {
+    //         do {
+    //             let job = try await orchestrator.run(sourceVideoURL: sourceVideoURL) { [weak self] newState in
+    //                 Task { @MainActor in
+    //                     self?.state = newState
+    //                 }
+    //             }
+    //             transcript = job.transcript
+    //             outputVideoURL = job.outputVideoURL
+    //             state = .completed(outputURL: job.outputVideoURL, transcript: job.transcript)
+    //         } catch is CancellationError {
+    //             state = .failed(message: PipelineError.cancelled.localizedDescription, recoverableStep: nil)
+    //         } catch {
+    //             state = .failed(message: error.localizedDescription, recoverableStep: retryStep(for: error))
+    //         }
+    //     }
+    // }
 
-    func cancelPipeline() {
-        pipelineTask?.cancel()
-    }
+    // func cancelPipeline() {
+    //     pipelineTask?.cancel()
+    // }
 
     func retry() {
-        runPipeline()
+        print("Retry (Does Nothing)")
+        // runPipeline()
     }
 
     func saveToPhotos() async {
