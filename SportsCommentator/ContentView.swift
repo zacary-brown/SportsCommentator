@@ -35,19 +35,29 @@ struct ContentView: View {
                     if let sourceURL = viewModel.sourceVideoURL {
                         Text("Source Preview")
                             .font(.headline)
-                        //VideoPlayer(player: AVPlayer(url: sourceURL))
-                        //    .frame(height: 220)
-                        //    .clipShape(RoundedRectangle(cornerRadius: 10))
+                        VideoPlayer(player: AVPlayer(url: sourceURL))
+                            .frame(height: 220)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
 
-                    // stateView
+                    stateView
+
+                    if !viewModel.transcript.isEmpty {
+                        Text("Transcript")
+                            .font(.headline)
+                        Text(viewModel.transcript)
+                            .font(.footnote)
+                            .padding(12)
+                            .background(Color.secondary.opacity(0.15))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
 
                     if let outputURL = viewModel.outputVideoURL {
                         Text("Final Video")
                             .font(.headline)
-                        // VideoPlayer(player: AVPlayer(url: outputURL))
-                        //    .frame(height: 220)
-                        //    .clipShape(RoundedRectangle(cornerRadius: 10))
+                        VideoPlayer(player: AVPlayer(url: outputURL))
+                            .frame(height: 220)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
 
                         HStack {
                             ShareLink(item: outputURL) {
@@ -68,45 +78,65 @@ struct ContentView: View {
         }
     }
 
-    // @ViewBuilder
-    // private var stateView: some View {
-    //     switch viewModel.state {
-    //     case .idle:
-    //         Button("Generate Commentary Video") {
-    //             viewModel.runPipeline()
-    //         }
-    //         .buttonStyle(.borderedProminent)
-    //         .disabled(viewModel.sourceVideoURL == nil)
-    //     case .running(let step):
-    //         VStack(alignment: .leading, spacing: 8) {
-    //             ProgressView()
-    //             Text(progressText(step: step))
-    //                 .font(.subheadline)
-    //             Button("Cancel") {
-    //                 viewModel.cancelPipeline()
-    //             }
-    //             .buttonStyle(.bordered)
-    //         }
-    //     case .failed(let message, let recoverableStep):
-    //         VStack(alignment: .leading, spacing: 8) {
-    //             Text("Error: \(message)")
-    //                 .foregroundStyle(.red)
-    //             if recoverableStep != nil {
-    //                 Button("Retry") {
-    //                     viewModel.retry()
-    //                 }
-    //                 .buttonStyle(.borderedProminent)
-    //             }
-    //         }
-    //     case .completed:
-    //         Text("Completed successfully.")
-    //             .foregroundStyle(.green)
-    //     }
-    // }
+    @ViewBuilder
+    private var stateView: some View {
+        switch viewModel.state {
+        case .idle:
+            Button("Generate Commentary Video") {
+                viewModel.runPipeline()
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(viewModel.sourceVideoURL == nil)
+        case .running(let step):
+            VStack(alignment: .leading, spacing: 8) {
+                ProgressView()
+                Text(progressText(step: step))
+                    .font(.subheadline)
+                Button("Cancel") {
+                    viewModel.cancelPipeline()
+                }
+                .buttonStyle(.bordered)
+            }
+        case .failed(let message, let recoverableStep):
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Error: \(message)")
+                    .foregroundStyle(.red)
+                if recoverableStep != nil {
+                    Button("Retry") {
+                        viewModel.retry()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+        case .completed:
+            Text("Completed successfully.")
+                .foregroundStyle(.green)
+        }
+    }
+
+    private func progressText(step: PipelineStep) -> String {
+        switch step {
+        case .importing:
+            return "Importing video..."
+        case .transcribing:
+            return "Transcribing video with OpenAI..."
+        case .generatingVoice:
+            return "Generating commentator voice with ElevenLabs..."
+        case .composing:
+            return "Stitching audio and video..."
+        }
+    }
 }
 
 #Preview {
     ContentView(
-        viewModel: PipelineViewModel()
+        viewModel: PipelineViewModel(
+            orchestrator: PipelineOrchestrator(
+                transcriptionClient: OpenAIClient(apiKey: nil),
+                voiceClient: ElevenLabsClient(apiKey: nil),
+                videoComposer: AVFoundationVideoComposer(),
+                voiceProfile: VoiceProfile(id: "preview", displayName: "Preview")
+            )
+        )
     )
 }
