@@ -11,7 +11,7 @@ import SwiftUI
 struct SportsCommentatorApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(viewModel: PipelineViewModel())
         }
     }
 }
