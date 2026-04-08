@@ -266,7 +266,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MACJ6X32Y6;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SportsCommentator/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app saves generated highlight videos to your Photos library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -301,7 +301,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MACJ6X32Y6;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SportsCommentator/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app saves generated highlight videos to your Photos library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
